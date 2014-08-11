@@ -1,9 +1,12 @@
 # Reproducible Research: Peer Assessment 1
 
-
 ## Loading and preprocessing the data
 
 
+```{r}
+act <- read.csv("activity.csv")
+summary(act)
+```
 
 ## What is mean total number of steps taken per day?
 
