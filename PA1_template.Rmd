@@ -4,20 +4,84 @@
 
 
 ```{r}
-act <- read.csv("activity.csv")
-summary(act)
-```
+act <- read.csv("activity.csv",  stringsAsFactors=FALSE)
+
+#Change char to date 
+act$date <- as.Date(act$date, "%Y-%m-%d")
 
 ## What is mean total number of steps taken per day?
+
+## Calculate aggregate steps per day
+datestep <- aggregate(act$steps, list(date = act$date), sum)
+barplot(datestep$x, xlab = "",space=1)
+# Put dates as labels in 60 degree angle to show all dates in the x-axis label
+end_point = 0.5 + nrow(datestep) + nrow(datestep)-1 
+text(seq(1.5,end_point,by=2), par("usr")[3]-0.25, srt = 60, adj= 1, xpd = TRUE, labels = paste(datestep$date), cex=0.65)
+
+#Calculate and report Mean and Median number of steps per day
+meanSteps <- mean(datestep$x, na.rm=T)
+cat ("Mean Steps per day" , meanSteps)
+mdnSteps <- median(datestep$x, na.rm=T)
+cat ("Median Steps per day" , mdnSteps)
+
+
+
+```
+
+
 
 
 
 ## What is the average daily activity pattern?
 
+```{r}
 
+## Calculate average steps per 5-min interval over all days
+fiveMintutesAvg <- aggregate(act$steps, list(intv = act$interval), mean, na.rm=TRUE)
+ plot (fiveMintutesAvg$x, fiveMintutesAvg$intv, type="l")
 
+#Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?"
+max <- which ( fiveMintutesAvg$x==max(fiveMintutesAvg$x))
+cat ("Five min avg with maximum number of steps on an average is: ", fiveMintutesAvg[max,1])
+
+```
 ## Imputing missing values
+```{r}
+#Calculate and report the total number of missing values in the dataset (i.e. #the total number of rows with NAs)
+
+nulls <- subset(act, is.na(act$steps))
+cat ("Total number of missing values in steps: ", nrow(nulls))
+
+#Keep this notnull set to rbind later with filledup null set
+notnulls <- subset(act, !is.na(act$steps))
+
+#Devise a strategy for filling in all of the missing values in the dataset. #The strategy does not need to be sophisticated. For example, you could use #the mean/median for that day, or the mean for that 5-minute interval, etc.
+#Change column names for merging
+colnames(fiveMintutesAvg) <- c("interval", "avgsteps")
+
+y <- merge(nulls,fiveMintutesAvg, by="interval" )
+
+nullsfilled <- y[c(4,3,1)]
+colnames (nullsfilled) <- c("steps", "date", "interval")
+
+#Create a new dataset that is equal to the original dataset but with the missing data filled in.
+newact <- rbind(notnulls, nullsfilled)
+
+#Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+datestep1 <- aggregate(newact$steps, list(date = newact$date), sum)
+barplot(datestep1$x, xlab = "",space=1)
+# Put dates as labels in 60 degree angle to show all dates in the x-axis label
+end_point = 0.5 + nrow(datestep1) + nrow(datestep1)-1 
+text(seq(1.5,end_point,by=2), par("usr")[3]-0.25, srt = 60, adj= 1, xpd = TRUE, labels = paste(datestep1$date), cex=0.65)
+
+#Calculate and report Mean and Median number of steps per day
+meanSteps <- mean(datestep1$x, na.rm=T)
+cat ("Mean Steps per day after filling not nulls " , meanSteps)
+mdnSteps <- median(datestep1$x, na.rm=T)
+cat ("Median Steps per day after filling not nulls" , mdnSteps)
 
 
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
