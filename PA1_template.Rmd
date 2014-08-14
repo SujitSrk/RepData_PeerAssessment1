@@ -1,87 +1,143 @@
 # Reproducible Research: Peer Assessment 1
 
-## Loading and preprocessing the data
+## Step 1. Loading and preprocessing the data
 
 
 ```{r}
+#Read Activity Source csv
 act <- read.csv("activity.csv",  stringsAsFactors=FALSE)
 
-#Change char to date 
+# Change char to date 
 act$date <- as.Date(act$date, "%Y-%m-%d")
+```
 
-## What is mean total number of steps taken per day?
+## Step 2. What is mean total number of steps taken per day
 
-## Calculate aggregate steps per day
+```{r}
+
+# Calculate aggregate steps per day
 datestep <- aggregate(act$steps, list(date = act$date), sum)
+
+               
+# Make a histogram (a barlpot really) of the total number of steps taken each day
 barplot(datestep$x, xlab = "",space=1)
-# Put dates as labels in 60 degree angle to show all dates in the x-axis label
+
+# Put dates as labels in 60 degree angle to show all dates in the x-axis label..this comes off better in a zoom and not in knit HTML
 end_point = 0.5 + nrow(datestep) + nrow(datestep)-1 
 text(seq(1.5,end_point,by=2), par("usr")[3]-0.25, srt = 60, adj= 1, xpd = TRUE, labels = paste(datestep$date), cex=0.65)
 
-#Calculate and report Mean and Median number of steps per day
-meanSteps <- mean(datestep$x, na.rm=T)
-cat ("Mean Steps per day" , meanSteps)
-mdnSteps <- median(datestep$x, na.rm=T)
-cat ("Median Steps per day" , mdnSteps)
+# Calculate and report Mean and Median number of steps per day
+meanSteps <- mean(datestep$x, na.rm=TRUE)
+mdnSteps <- median(datestep$x, na.rm=TRUE)
 
+# Write the mean and median using Markdown below
 
 
 ```
 
+### Mean Steps per day `r meanSteps`
+### Median Steps per day `r mdnSteps`
 
 
-
-
-## What is the average daily activity pattern?
+## Step 3: What is the average daily activity pattern?
 
 ```{r}
 
-## Calculate average steps per 5-min interval over all days
+
+
+# Calculate average steps per 5-min interval over all days
 fiveMintutesAvg <- aggregate(act$steps, list(intv = act$interval), mean, na.rm=TRUE)
- plot (fiveMintutesAvg$x, fiveMintutesAvg$intv, type="l")
 
-#Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?"
-max <- which ( fiveMintutesAvg$x==max(fiveMintutesAvg$x))
-cat ("Five min avg with maximum number of steps on an average is: ", fiveMintutesAvg[max,1])
+#Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis). The aggregate steps column is named "x" by default
 
+
+plot (fiveMintutesAvg$x, fiveMintutesAvg$intv, type="l")
+
+# To find Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?"
+
+
+max <- which.max ( fiveMintutesAvg$x) 
 ```
-## Imputing missing values
+### Five minute interval with maximum number of steps on an average is: `r fiveMintutesAvg[max,1]`
+
+
+
+## Step 4: Inputing missing values
 ```{r}
-#Calculate and report the total number of missing values in the dataset (i.e. #the total number of rows with NAs)
+
+#Calculate and report the total number of missing values in the dataset (i.e. #the total number of rows with NAs). Nulls are only in the steps column (Checked manually )
 
 nulls <- subset(act, is.na(act$steps))
+
 cat ("Total number of missing values in steps: ", nrow(nulls))
 
-#Keep this notnull set to rbind later with filledup null set
+#Keep this notnull set to rbind later with  set replacing nulls with mean values
 notnulls <- subset(act, !is.na(act$steps))
 
-#Devise a strategy for filling in all of the missing values in the dataset. #The strategy does not need to be sophisticated. For example, you could use #the mean/median for that day, or the mean for that 5-minute interval, etc.
-#Change column names for merging
+# "Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc" 
+# Using mean value for that day  to replace nulls
+
+# Change column names for merging null set with the fiveMinutesAvg set 
 colnames(fiveMintutesAvg) <- c("interval", "avgsteps")
 
 y <- merge(nulls,fiveMintutesAvg, by="interval" )
 
+# Get the avg steps, date and interval columns in the same order of the original set 
+
 nullsfilled <- y[c(4,3,1)]
+
+# Rename the columns to rbind
 colnames (nullsfilled) <- c("steps", "date", "interval")
 
-#Create a new dataset that is equal to the original dataset but with the missing data filled in.
+# rbind this set with the notnull set to creating a new dataset that is equal to the original dataset but with the missing data filled in.
+
 newact <- rbind(notnulls, nullsfilled)
 
-#Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+#Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of inputing missing data on the estimates of the total daily number of steps?
 
+#Calculate total steps per day using new data set (newact). Aggregated column is named x by default.
 datestep1 <- aggregate(newact$steps, list(date = newact$date), sum)
+
+# Plot total steps (x) per day 
 barplot(datestep1$x, xlab = "",space=1)
-# Put dates as labels in 60 degree angle to show all dates in the x-axis label
+
+# Put dates as labels in 60 degree angle to show all dates in the x-axis label. This looks better in the zoom-ed plot but may not be clear in html.
+
 end_point = 0.5 + nrow(datestep1) + nrow(datestep1)-1 
 text(seq(1.5,end_point,by=2), par("usr")[3]-0.25, srt = 60, adj= 1, xpd = TRUE, labels = paste(datestep1$date), cex=0.65)
 
 #Calculate and report Mean and Median number of steps per day
-meanSteps <- mean(datestep1$x, na.rm=T)
-cat ("Mean Steps per day after filling not nulls " , meanSteps)
-mdnSteps <- median(datestep1$x, na.rm=T)
-cat ("Median Steps per day after filling not nulls" , mdnSteps)
+meanSteps2 <- mean(datestep1$x, na.rm=T)
+mdnSteps2 <- median(datestep1$x, na.rm=T)
 
 
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
+### Mean Steps per day for data with nulls `r meanSteps` and after filling not nulls `r meanSteps2`
+### Median Steps per day for data with nulls `r mdnSteps` and after filling not nulls `r mdnSteps2`
+
+### Conclusion: The Mean and Median does not differ substantially between the data set with nulls and the data set with nulls replaced by mean
+
+
+## Step 4: Are there differences in activity patterns between weekdays and weekends?
+```{r}
+
+# Weekend if the day of week is Sunday or Saturday
+
+newact$weekendflag <- ( weekdays(newact$date)== "Sunday" | weekdays(newact$date)== "Saturday")
+
+#Convert to Factor variable as required by assignment; FALSE comes first 
+newact$weekendflag <- factor(newact$weekendflag, labels=c("WeekDay", "Weekend"))
+
+# Aggregate set by weekend/weekday and 5-min intervals within weekday/weekend
+fiveMintutesAvgWeekEnd <- aggregate(newact$steps, list(wkend = newact$weekendflag, intv = newact$interval), mean)
+
+#Load lattice library for the xyplot
+library(lattice)
+
+#Plot the average 5-min intervals for weekday/weekend
+
+xyplot(x ~ intv | wkend, fiveMintutesAvgWeekEnd , type="l")
+
+```
+### Yes there are differences in Activity patterns in weekdays and weekends: more steps on weekends
