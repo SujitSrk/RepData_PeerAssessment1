@@ -13,7 +13,7 @@ act$date <- as.Date(act$date, "%Y-%m-%d")
 
 ## Step 2. What is mean total number of steps taken per day
 
-```{r}
+```{r fig.width=15, fig.height=10}
 
 # Calculate aggregate steps per day
 datestep <- aggregate(act$steps, list(date = act$date), sum)
@@ -41,7 +41,7 @@ mdnSteps <- median(datestep$x, na.rm=TRUE)
 
 ## Step 3: What is the average daily activity pattern?
 
-```{r}
+```{r fig.width=10, fig.height=10}
 
 
 
@@ -51,7 +51,7 @@ fiveMintutesAvg <- aggregate(act$steps, list(intv = act$interval), mean, na.rm=T
 #Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis). The aggregate steps column is named "x" by default
 
 
-plot (fiveMintutesAvg$x, fiveMintutesAvg$intv, type="l")
+plot (fiveMintutesAvg$x, fiveMintutesAvg$intv, type="l",ylab="Avg no. of steps", xlab="5-min interval")
 
 # To find Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?"
 
@@ -63,7 +63,7 @@ max <- which.max ( fiveMintutesAvg$x)
 
 
 ## Step 4: Inputing missing values
-```{r}
+```{r fig.width=15, fig.height=10}
 
 #Calculate and report the total number of missing values in the dataset (i.e. #the total number of rows with NAs). Nulls are only in the steps column (Checked manually )
 
@@ -120,7 +120,7 @@ mdnSteps2 <- median(datestep1$x, na.rm=T)
 
 
 ## Step 4: Are there differences in activity patterns between weekdays and weekends?
-```{r}
+```{r fig.width=10, fig.height=10}
 
 # Weekend if the day of week is Sunday or Saturday
 
@@ -137,7 +137,7 @@ library(lattice)
 
 #Plot the average 5-min intervals for weekday/weekend
 
-xyplot(x ~ intv | wkend, fiveMintutesAvgWeekEnd , type="l")
+xyplot(x ~ intv | wkend, fiveMintutesAvgWeekEnd , type="l", xlab="5-min Interval")
 
 ```
-### Yes there are differences in Activity patterns in weekdays and weekends: more steps on weekends
+### Conclusion: Yes there are differences in Activity patterns in weekdays and weekends: There are more steps on average in the 5-min interval on weekends than weekdays
